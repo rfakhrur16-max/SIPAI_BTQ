@@ -1111,63 +1111,59 @@
                 showToast("Mode Lokal: Data tersimpan di Browser.");
             }
         }
+    <script>
+      // Tempelkan Web App URL hasil Deploy Anda di sini
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzXNWTEZgASa-1McCuU0IENFITfSwW1rVmoWc71tvyUFy3QwSZkOmmm70BXwPtw4Ccz/exec";
 
-        <script>
-  <script>
-  // Tempelkan Web App URL hasil Deploy Langkah 1 di sini
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzXNWTEzgASa-1McCuU0IENFItfSwW1rVmoWc71tvyUFy3QwSZkOmmm70BXwPtw4Ccz/exec";
+      function loadFromSheet() {
+          showToast("Mengambil data dari Sheets...");
 
-  function loadFromSheet() {
-      showToast("Mengambil data dari Sheets...");
+          if (!GAS_URL || GAS_URL.includes("PASANG_WEB_APP_URL")) {
+              showToast("Mode Demo: URL Google Apps Script belum diisi.");
+              return;
+          }
 
-      if (!GAS_URL || GAS_URL.includes("PASANG_WEB_APP_URL")) {
-          showToast("Mode Demo: URL Google Apps Script belum diisi.");
-          return;
+          fetch(GAS_URL + "?action=loadAllData")
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error("HTTP error! Status: " + response.status);
+                  }
+                  return response.json();
+              })
+              .then(res => {
+                  if (res && res.data) {
+                      appState = res.data;
+                  } else if (res) {
+                      appState = res;
+                  }
+                  
+                  if (!appState.hafalan) appState.hafalan = [];
+                  if (!appState.identitas) appState.identitas = {};
+                  if (!appState.identitas.ks) appState.identitas.ks = "-";
+                  if (!appState.identitas.nipKs) appState.identitas.nipKs = "-";
+                  
+                  saveLocalData();
+                  if (typeof renderAll === 'function') renderAll();
+                  showToast("Data dari Sheets berhasil dimuat!");
+              })
+              .catch(err => {
+                  console.error("Detail Error:", err);
+                  showToast("Gagal mengambil data dari server.");
+              });
       }
 
-      fetch(GAS_URL + "?action=loadAllData")
-          .then(response => {
-              if (!response.ok) {
-                  throw new Error("HTTP error! Status: " + response.status);
-              }
-              return response.json();
-          })
-          .then(res => {
-              console.log("Respon dari Server:", res);
-              if (res && res.data) {
-                  // Jika data terbungkus dalam res.data
-                  appState = res.data;
-              } else if (res) {
-                  // Jika data langsung berupa objek state
-                  appState = res;
-              }
-              
-              // Penyesuaian struktur variabel dasar
-              if (!appState.hafalan) appState.hafalan = [];
-              if (!appState.identitas) appState.identitas = {};
-              if (!appState.identitas.ks) appState.identitas.ks = "-";
-              if (!appState.identitas.nipKs) appState.identitas.nipKs = "-";
-              
-              saveLocalData();
-              if (typeof renderAll === 'function') renderAll();
-              showToast("Data dari Sheets berhasil dimuat!");
-          })
-          .catch(err => {
-              console.error("Detail Error:", err);
-              alert("Gagal mengambil data dari Google Sheets.\nDetail: " + err.message);
-          });
-  }
-</script>
-
-        // TOAST NOTIFICATION UTILITY
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
+      // TOAST NOTIFICATION UTILITY
+      function showToast(msg) {
+          const toast = document.getElementById('toast');
+          const toastMsg = document.getElementById('toast-msg');
+          if (toastMsg) toastMsg.innerText = msg;
+          if (toast) {
+              toast.classList.remove('hidden');
+              setTimeout(() => {
+                  toast.classList.add('hidden');
+              }, 3000);
+          }
+      }
     </script>
 </body>
 </html>
