@@ -1111,24 +1111,20 @@
                 showToast("Mode Lokal: Data tersimpan di Browser.");
             }
         }
-      // Tempelkan Web App URL hasil Deploy Anda di sini
+      
+      // Pastikan tanda petik yang dipakai adalah tanda petik lurus biasa ( " )
       const GAS_URL = "https://script.google.com/macros/s/AKfycbwX47ktOWzKI6poeqWpsmZCC_1lKcJeLGQ_sD2m2P84H9YRVu2iw0uiJPGrf3HVkt4Q/exec";
 
       function loadFromSheet() {
           showToast("Mengambil data dari Sheets...");
-
+          
           if (!GAS_URL || GAS_URL.includes("PASANG_WEB_APP_URL")) {
               showToast("Mode Demo: URL Google Apps Script belum diisi.");
               return;
           }
 
           fetch(GAS_URL + "?action=loadAllData")
-              .then(response => {
-                  if (!response.ok) {
-                      throw new Error("HTTP error! Status: " + response.status);
-                  }
-                  return response.json();
-              })
+              .then(response => response.json())
               .then(res => {
                   if (res && res.data) {
                       appState = res.data;
