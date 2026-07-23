@@ -1112,26 +1112,43 @@
             }
         }
 
-        function loadFromSheet() {
-            showToast("Mengambil data dari Sheets...");
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        if (res.success && res.data) {
-                            appState = res.data;
-                            if (!appState.hafalan) appState.hafalan = [];
-                            if (!appState.identitas.ks) appState.identitas.ks = "-";
-                            if (!appState.identitas.nipKs) appState.identitas.nipKs = "-";
-                            saveLocalData();
-                            showToast("Data dari Sheets berhasil dimuat!");
-                        }
-                    })
-                    .withFailureHandler(err => alert("Error: " + err))
-                    .loadAllDataFromSheet();
-            } else {
-                showToast("Mode Demo: Menggunakan penyimpanan lokal.");
-            }
-        }
+        <script>
+  // 1. Ganti teks di bawah ini dengan URL Web App milik Anda
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbz6aX9mNVLzW3rNSJkQmrvlQuFnm_mZ8ygwyDwqEKBfxm2VsHBsjWubAJ14Xn9CORIt/exec;
+
+  function loadFromSheet() {
+      showToast("Mengambil data dari Sheets...");
+
+      // Cek jika link GAS_URL sudah diisi dengan benar
+      if (GAS_URL && !GAS_URL.includes("PASANG_WEB_APP_URL")) {
+          fetch(GAS_URL + "?action=loadAllData")
+              .then(response => response.json())
+              .then(res => handleSheetData(res))
+              .catch(err => {
+                  console.error(err);
+                  showToast("Gagal mengambil data dari server.");
+              });
+      } else {
+          showToast("Mode Demo: Menggunakan penyimpanan lokal.");
+      }
+  }
+
+  function handleSheetData(res) {
+      if (res && res.success && res.data) {
+          appState = res.data;
+          if (!appState.hafalan) appState.hafalan = [];
+          if (!appState.identitas) appState.identitas = {};
+          if (!appState.identitas.ks) appState.identitas.ks = "-";
+          if (!appState.identitas.nipKs) appState.identitas.nipKs = "-";
+          
+          saveLocalData();
+          if (typeof renderAll === 'function') renderAll();
+          showToast("Data dari Sheets berhasil dimuat!");
+      } else {
+          showToast("Gagal memproses data dari Sheets.");
+      }
+  }
+</script>
 
         // TOAST NOTIFICATION UTILITY
         function showToast(msg) {
