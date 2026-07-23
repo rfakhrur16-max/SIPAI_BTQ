@@ -1113,40 +1113,49 @@
         }
 
         <script>
-  // 1. Ganti teks di bawah ini dengan URL Web App milik Anda
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbz6aX9mNVLzW3rNSJkQmrvlQuFnm_mZ8ygwyDwqEKBfxm2VsHBsjWubAJ14Xn9CORIt/exec;
+  <script>
+  // Tempelkan Web App URL hasil Deploy Langkah 1 di sini
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzXNWTEzgASa-1McCuU0IENFItfSwW1rVmoWc71tvyUFy3QwSZkOmmm70BXwPtw4Ccz/exec";
 
   function loadFromSheet() {
       showToast("Mengambil data dari Sheets...");
 
-      // Cek jika link GAS_URL sudah diisi dengan benar
-      if (GAS_URL && !GAS_URL.includes("PASANG_WEB_APP_URL")) {
-          fetch(GAS_URL + "?action=loadAllData")
-              .then(response => response.json())
-              .then(res => handleSheetData(res))
-              .catch(err => {
-                  console.error(err);
-                  showToast("Gagal mengambil data dari server.");
-              });
-      } else {
-          showToast("Mode Demo: Menggunakan penyimpanan lokal.");
+      if (!GAS_URL || GAS_URL.includes("PASANG_WEB_APP_URL")) {
+          showToast("Mode Demo: URL Google Apps Script belum diisi.");
+          return;
       }
-  }
 
-  function handleSheetData(res) {
-      if (res && res.success && res.data) {
-          appState = res.data;
-          if (!appState.hafalan) appState.hafalan = [];
-          if (!appState.identitas) appState.identitas = {};
-          if (!appState.identitas.ks) appState.identitas.ks = "-";
-          if (!appState.identitas.nipKs) appState.identitas.nipKs = "-";
-          
-          saveLocalData();
-          if (typeof renderAll === 'function') renderAll();
-          showToast("Data dari Sheets berhasil dimuat!");
-      } else {
-          showToast("Gagal memproses data dari Sheets.");
-      }
+      fetch(GAS_URL + "?action=loadAllData")
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error("HTTP error! Status: " + response.status);
+              }
+              return response.json();
+          })
+          .then(res => {
+              console.log("Respon dari Server:", res);
+              if (res && res.data) {
+                  // Jika data terbungkus dalam res.data
+                  appState = res.data;
+              } else if (res) {
+                  // Jika data langsung berupa objek state
+                  appState = res;
+              }
+              
+              // Penyesuaian struktur variabel dasar
+              if (!appState.hafalan) appState.hafalan = [];
+              if (!appState.identitas) appState.identitas = {};
+              if (!appState.identitas.ks) appState.identitas.ks = "-";
+              if (!appState.identitas.nipKs) appState.identitas.nipKs = "-";
+              
+              saveLocalData();
+              if (typeof renderAll === 'function') renderAll();
+              showToast("Data dari Sheets berhasil dimuat!");
+          })
+          .catch(err => {
+              console.error("Detail Error:", err);
+              alert("Gagal mengambil data dari Google Sheets.\nDetail: " + err.message);
+          });
   }
 </script>
 
