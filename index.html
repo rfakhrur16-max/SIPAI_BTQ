@@ -1098,19 +1098,37 @@
         }
 
         function syncToSheet() {
-            showToast("Menyimpan ke Google Sheets...");
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        if (res.success) showToast("Data berhasil disinkronkan ke Sheets!");
-                        else alert("Gagal menyimpan: " + res.message);
-                    })
-                    .withFailureHandler(err => alert("Error: " + err))
-                    .saveAllDataToSheet(JSON.stringify(appState));
-            } else {
-                showToast("Mode Lokal: Data tersimpan di Browser.");
-            }
-        }
+    // 1. Simpan dulu ke browser sebagai cadangan
+    saveLocalData();
+
+    // 2. Cek apakah GAS_URL ada
+    if (!GAS_URL || GAS_URL.includes("PASANG_WEB_APP_URL")) {
+        showToast("Mode Lokal: Data tersimpan di Browser.");
+        return;
+    }
+
+    showToast("Menyimpan data ke Sheets...");
+
+    // 3. Kirim data ke Apps Script
+    fetch(GAS_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "text/plain"
+        },
+        body: JSON.stringify({
+            action: "saveAllData",
+            data: appState
+        })
+    })
+    .then(() => {
+        showToast("Data berhasil disimpan ke Sheets!");
+    })
+    .catch(err => {
+        console.error("Error Simpan:", err);
+        showToast("Gagal menyimpan ke server, data tersimpan secara lokal.");
+    });
+}
       
       // Pastikan tanda petik yang dipakai adalah tanda petik lurus biasa ( " )
       const GAS_URL = "https://script.google.com/macros/s/AKfycbwX47ktOWzKI6poeqWpsmZCC_1lKcJeLGQ_sD2m2P84H9YRVu2iw0uiJPGrf3HVkt4Q/exec";
